@@ -1,8 +1,10 @@
 import json
 from datetime import datetime
+from urllib import response
 
 import requests
 from airflow import DAG
+from airflow.decorators import dag, task
 from airflow.operators.python import PythonOperator
 
 default_args = {
@@ -19,21 +21,39 @@ def _get_data():
 
 def _format_data(res):
     data = {}
-    data['first_name']
+    location = res['location']
+    data['first_name'] = res['name']['first']
+    data['last_name'] = res['name']['last']
+    data['gender'] = res['gender']
+    data['address'] = f"{str(location['street']['number'])} {location['street']['name']}," \
+        f"{location['city']}, {location['state']}, {location['country']}"
+    
+    data['post_code'] = location['postcode']
+    data['email'] = res['email']
+    data['username'] = res['login']['username']
+    data['dob'] = res['dob']['date']
+    data['registered_date'] = res['registered']['date']
+    data['phone'] = res['phone']
+    data['picture'] = res['picture']['medium']
 
+    print(json.dumps(data, indent=4, ensure_ascii=False))
+    print(data)
     return data
 
-def _stream_data():
-    pass
-
-with DAG(
-    'user_automation',
+@dag(
     default_args=default_args,
     catchup=False
-) as dag:
-    streaming = PythonOperator(
-        task_id='stream_data_from_api',
-        python_callable=_stream_data
-    )
+)
+def user_automation():
+    """DAG task flow definition"""
 
-_stream_data()
+    @task
+    def stream_data():
+        print('Stream data ...')
+        res = _get_data()
+        _format_data(res)
+
+    stream_data()
+
+user_automation()
+_format_data(_get_data())
