@@ -1,9 +1,10 @@
 import json
+import time
 from datetime import datetime
 
 import requests
 from airflow.decorators import dag, task
-from
+from kafka import KafkaProducer
 
 default_args = {
     'owner' : 'thuphan',
@@ -34,8 +35,6 @@ def _format_data(res):
     data['phone'] = res['phone']
     data['picture'] = res['picture']['medium']
 
-    print(json.dumps(data, indent=4, ensure_ascii=False))
-    print(data)
     return data
 
 @dag(
@@ -47,11 +46,24 @@ def user_automation():
 
     @task
     def stream_data():
+
         print('Stream data ...')
         res = _get_data()
-        _format_data(res)
+        res = _format_data(res)
+        print(json.dumps(res, indent=5, ensure_ascii=False))
 
-    stream_data()
+        producer = KafkaProducer(bootstrap_servers=['localhost:9092'], max_block_ms=5000)
+        producer.send(topic='users_created', value=json.dumps(res).encode('utf-8'))
 
-user_automation()
-_format_data(_get_data())
+# user_automation()
+        
+def stream_data():
+    print('Stream data ...')
+    res = _get_data()
+    res = _format_data(res)
+    print(json.dumps(res, indent=5, ensure_ascii=False))
+
+    # Send message
+    producer = KafkaProducer(bootstrap_servers=['localhost:9092'], max_block_ms=5000)
+    producer.send(topic='users_created', value=json.dumps(res).encode('utf-8'))
+stream_data()
