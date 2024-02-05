@@ -1,11 +1,9 @@
 import json
 from datetime import datetime
-from urllib import response
 
 import requests
-from airflow import DAG
 from airflow.decorators import dag, task
-from airflow.operators.python import PythonOperator
+from
 
 default_args = {
     'owner' : 'thuphan',

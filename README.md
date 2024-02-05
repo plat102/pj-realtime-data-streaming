@@ -51,6 +51,8 @@ https://www.youtube.com/watch?v=GqAcTrqKcrY&list=PL_Ct8Cox2p8UlTfHyJc3RDGuGktPNs
   * `pip install "apache-airflow==2.6.1" --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.6.1/constraints-3.11.txt"`
   * [python 3.x - Pip install on Mac OS gets error: command &#39;/usr/bin/clang&#39; failed with exit code 1 - Stack Overflow](https://stackoverflow.com/questions/64881510/pip-install-on-mac-os-gets-error-command-usr-bin-clang-failed-with-exit-code)
 
+`pip install kafka-python`
+
 ### API account
 
 [https://randomuser.me/api]()
