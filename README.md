@@ -7,8 +7,14 @@ https://www.youtube.com/watch?v=GqAcTrqKcrY&list=PL_Ct8Cox2p8UlTfHyJc3RDGuGktPNs
 
 * Data Source: [Random User Generator | Home](https://randomuser.me/)
 * Apache Airflow
+* Apache Zookeeper
 * Apache Kafka
+  * Broker
+  * Schema registry
+  * Control center
 * Apache Spark
+  * Master
+  * Worker
 * Cassandra
 
 # Guide
@@ -45,12 +51,26 @@ https://www.youtube.com/watch?v=GqAcTrqKcrY&list=PL_Ct8Cox2p8UlTfHyJc3RDGuGktPNs
   * `pip install "apache-airflow==2.6.1" --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.6.1/constraints-3.11.txt"`
   * [python 3.x - Pip install on Mac OS gets error: command &#39;/usr/bin/clang&#39; failed with exit code 1 - Stack Overflow](https://stackoverflow.com/questions/64881510/pip-install-on-mac-os-gets-error-command-usr-bin-clang-failed-with-exit-code)
 
----
-
-`conda create --name airflow_env python=3.11 -y`
-
-`conda activate airflow_env`
-
-...
-
 ### API account
+
+[https://randomuser.me/api]()
+
+# Checklists
+
+## Get data from API
+
+* [ ] Using request to get data
+
+## Build infrastructure
+
+* [ ] Zookeeper
+* [ ] Kafka
+* [ ] Spark
+* [ ] cassandra
+
+## Stream data into Kafka
+
+
+## Apache Spark processing
+
+## Stream data into Cassandra
