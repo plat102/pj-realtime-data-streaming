@@ -79,5 +79,7 @@ https://www.youtube.com/watch?v=GqAcTrqKcrY&list=PL_Ct8Cox2p8UlTfHyJc3RDGuGktPNs
 
 ## Apache Spark processing
 
+* [ ] Setup Spark (master and 1 worker)
+* [ ] Setup Cassandra
 
 ## Stream data into Cassandra
