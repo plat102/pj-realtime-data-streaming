@@ -1,4 +1,5 @@
 import json
+import logging
 import time
 from datetime import datetime
 
@@ -26,7 +27,6 @@ def _format_data(res):
     data['gender'] = res['gender']
     data['address'] = f"{str(location['street']['number'])} {location['street']['name']}," \
         f"{location['city']}, {location['state']}, {location['country']}"
-    
     data['post_code'] = location['postcode']
     data['email'] = res['email']
     data['username'] = res['login']['username']
@@ -47,23 +47,24 @@ def user_automation():
     @task
     def stream_data():
 
-        print('Stream data ...')
-        res = _get_data()
-        res = _format_data(res)
-        print(json.dumps(res, indent=5, ensure_ascii=False))
+        # Send message
+        producer = KafkaProducer(bootstrap_servers=['broker:29092'], max_block_ms=5000)
+        curr_time = time.time()
 
-        producer = KafkaProducer(bootstrap_servers=['localhost:9092'], max_block_ms=5000)
-        producer.send(topic='users_created', value=json.dumps(res).encode('utf-8'))
+        while True:
+            if time.time() > curr_time + 60:
+                break
+            try:
+                # Get data
+                res = _get_data()
+                res = _format_data(res)
 
-# user_automation()
-        
-def stream_data():
-    print('Stream data ...')
-    res = _get_data()
-    res = _format_data(res)
-    print(json.dumps(res, indent=5, ensure_ascii=False))
+                producer.send(topic='users_created', value=json.dumps(res).encode('utf-8'))
+            except Exception as e:
+                logging.error(f'Error occur: {e}')
+                continue
 
-    # Send message
-    producer = KafkaProducer(bootstrap_servers=['localhost:9092'], max_block_ms=5000)
-    producer.send(topic='users_created', value=json.dumps(res).encode('utf-8'))
-stream_data()
+    stream_data()
+
+user_automation()
+    

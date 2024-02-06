@@ -61,18 +61,23 @@ https://www.youtube.com/watch?v=GqAcTrqKcrY&list=PL_Ct8Cox2p8UlTfHyJc3RDGuGktPNs
 
 ## Get data from API
 
-* [ ] Using request to get data
+* [X] Using request to get data
 
 ## Build infrastructure
 
-* [ ] Zookeeper
-* [ ] Kafka
+* [X] Zookeeper
+* [X] Kafka
+* [X] Airflow
 * [ ] Spark
 * [ ] cassandra
 
 ## Stream data into Kafka
 
+* [X] Add Kafka setup to docker-compose
+* [X] Implement Kafka send message code
+* [X] Add Airflow setup to docker-compose
 
 ## Apache Spark processing
+
 
 ## Stream data into Cassandra
