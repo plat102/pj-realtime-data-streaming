@@ -1,9 +1,10 @@
 # Introduction
 
-Learm from this video:
-https://www.youtube.com/watch?v=GqAcTrqKcrY&list=PL_Ct8Cox2p8UlTfHyJc3RDGuGktPNs9Q3&index=5
+Learm from this video: [Realtime Data Streaming |  End To End Data Engineering Project](https://www.youtube.com/watch?v=GqAcTrqKcrY&t=3s&ab_channel=CodeWithYu)
 
-# Architecture
+## Architecture
+
+![1730554725756](image/README/1730554725756.png)
 
 * Data Source: [Random User Generator | Home](https://randomuser.me/)
 * Apache Airflow
@@ -17,9 +18,9 @@ https://www.youtube.com/watch?v=GqAcTrqKcrY&list=PL_Ct8Cox2p8UlTfHyJc3RDGuGktPNs
   * Worker
 * Cassandra
 
-# Guide
+## Checklist
 
-## Steps to do
+**Steps to do**
 
 1. [ ] Get data from the API
 2. [ ] Build infrastructure using docker compose
@@ -27,61 +28,45 @@ https://www.youtube.com/watch?v=GqAcTrqKcrY&list=PL_Ct8Cox2p8UlTfHyJc3RDGuGktPNs
 4. [ ] Process by Spark
 5. [ ] Stream data into Cassdra
 
-## Things to improve
+### Get data from API
 
-* Packages management
-  * [python - PIP Constraints Files - Stack Overflow](https://stackoverflow.com/questions/34645821/pip-constraints-files)
-* 
+* [ ] Using request to get data
 
-# How to run it
+### Build infrastructure
+
+* [ ] Zookeeper
+* [ ] Kafka
+* [ ] Airflow
+* [ ] Spark
+* [ ] cassandra
+
+### Stream data into Kafka
+
+* [ ] Add Kafka setup to docker-compose
+* [ ] Implement Kafka send message code
+* [ ] Add Airflow setup to docker-compose
+
+## Apache Spark processing
+
+* [ ] Setup Spark (master and 1 worker)
+* [ ] Setup Cassandra
+
+### Stream data into Cassandra
+
+* [ ] Add Spark stream
 
 ## Setup
 
 ### Environments
 
-`python3.9 -m venv .venv `
+```
+py -3.11 -m venv .venv
 
-`source .venv/bin/activate `
+.\.venv\Scripts\activate
 
-` pip install -r requirements.txt`
-
-* `apache-airflow`: [How to Install Apache Airflow on Mac | by Egemen Eroglu | Medium](https://erogluegemen.medium.com/how-to-install-apache-airflow-on-mac-df9bd5cf1ff8)
-  * `pip install 'apache-airflow==2.8.0' \ --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.8.0/constraints-3.8.txt"`
-    * [apache/airflow: Apache Airflow - A platform to programmatically author, schedule, and monitor workflows (github.com)](https://github.com/apache/airflow)
-  * `pip install "apache-airflow==2.6.1" --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.6.1/constraints-3.11.txt"`
-  * [python 3.x - Pip install on Mac OS gets error: command &#39;/usr/bin/clang&#39; failed with exit code 1 - Stack Overflow](https://stackoverflow.com/questions/64881510/pip-install-on-mac-os-gets-error-command-usr-bin-clang-failed-with-exit-code)
-
-`pip install kafka-python`
+python -m pip install -r requirements.txt
+```
 
 ### API account
 
 [https://randomuser.me/api]()
-
-# Checklists
-
-## Get data from API
-
-* [X] Using request to get data
-
-## Build infrastructure
-
-* [X] Zookeeper
-* [X] Kafka
-* [X] Airflow
-* [ ] Spark
-* [ ] cassandra
-
-## Stream data into Kafka
-
-* [X] Add Kafka setup to docker-compose
-* [X] Implement Kafka send message code
-* [X] Add Airflow setup to docker-compose
-
-## Apache Spark processing
-
-* [X] Setup Spark (master and 1 worker)
-* [X] Setup Cassandra
-
-## Stream data into Cassandra
-
-* [ ] Add Spark stream
