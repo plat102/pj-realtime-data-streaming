@@ -1,6 +1,9 @@
-# Introduction
+# Realtime Data Streaming
 
-Learm from this video: [Realtime Data Streaming |  End To End Data Engineering Project](https://www.youtube.com/watch?v=GqAcTrqKcrY&t=3s&ab_channel=CodeWithYu)
+## References
+
+* Start from this video: [Realtime Data Streaming |  End To End Data Engineering Project](https://www.youtube.com/watch?v=GqAcTrqKcrY&t=3s&ab_channel=CodeWithYu)
+* [Tutorial on the TaskFlow API — Airflow Documentation](https://airflow.apache.org/docs/apache-airflow/2.3.1/tutorial_taskflow_api.html)
 
 ## Architecture
 
@@ -18,7 +21,7 @@ Learm from this video: [Realtime Data Streaming |  End To End Data Engineering P
   * Worker
 * Cassandra
 
-## Checklist
+## Tasks
 
 **Steps to do**
 
@@ -46,7 +49,7 @@ Learm from this video: [Realtime Data Streaming |  End To End Data Engineering P
 * [ ] Implement Kafka send message code
 * [ ] Add Airflow setup to docker-compose
 
-## Apache Spark processing
+### Apache Spark processing
 
 * [ ] Setup Spark (master and 1 worker)
 * [ ] Setup Cassandra
@@ -55,7 +58,7 @@ Learm from this video: [Realtime Data Streaming |  End To End Data Engineering P
 
 * [ ] Add Spark stream
 
-## Setup
+## Run the project locally
 
 ### Environments
 
