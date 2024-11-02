@@ -1,6 +1,8 @@
 version: '3'
 
 services:
+
+  # Zookeeper
   zookeeper:
       image: confluentinc/cp-zookeeper:7.4.0
       hostname: zookeeper
@@ -18,6 +20,7 @@ services:
       networks:
         - confluent
 
+  # Kafka Broker
   broker:
     image: confluentinc/cp-server:7.4.0
     hostname: broker
@@ -55,6 +58,7 @@ services:
       timeout: 5s
       retries: 5
 
+  # Kafka Schema Registry
   schema-registry:
     image: confluentinc/cp-schema-registry:7.4.0
     hostname: schema-registry
@@ -104,11 +108,14 @@ services:
       timeout: 10s
       retries: 5
       
-  webserver:
-    image: apache/airflow:2.6.1-python3.9
-    # command: webserver
-    entrypoint: ['/opt/airflow/script/entrypoint.sh']
-    command: ["bash", "-c", "chmod +x /opt/airflow/script/entrypoint.sh && webserver"]
+  airflow-webserver:
+    image: apache/airflow:2.9.2-python3.11
+    # entrypoint: ["/bin/bash", "-c", "/opt/airflow/script/entrypoint.sh"]
+    entrypoint: ["/bin/bash", "-c", "cat /opt/airflow/script/entrypoint.sh && /opt/airflow/script/entrypoint.sh"]
+    # command: ["bash", "-c", "chmod +x /opt/airflow/script/entrypoint.sh && webserver"]
+    command: ["webserver"]
+    # entrypoint: ["bash"]
+    # command: ["-c", "sleep infinity"]
     depends_on:
       - postgres
     environment:
@@ -134,10 +141,10 @@ services:
     networks:
       - confluent
 
-  scheduler:
-    image: apache/airflow:2.6.1-python3.9
+  airflow-scheduler:
+    image: apache/airflow:2.9.2-python3.11
     depends_on:
-      webserver:
+      airflow-webserver:
         condition: service_healthy
     volumes:
       - ./dags:/opt/airflow/dags
@@ -153,7 +160,7 @@ services:
       - confluent
 
   postgres:
-    image: postgres:14.0
+    image: postgres:15
     environment:
       - POSTGRES_USER=airflow
       - POSTGRES_PASSWORD=airflow
