@@ -21,6 +21,12 @@
   * Worker
 * Cassandra
 
+| App UI               | URL                                                           |
+| -------------------- | ------------------------------------------------------------- |
+| Airflow              | [http://localhost:8080/home](http://localhost:8080/home)         |
+| Kafka Control Center | [http://localhost:9021/clusters](http://localhost:9021/clusters) |
+| Spark Master         | [http://localhost:9090/](http://localhost:9090/)                 |
+
 ## Tasks
 
 **Steps to do**
@@ -60,7 +66,7 @@
 
 ## Run the project locally
 
-### Environments
+#### Environments
 
 ```
 py -3.11 -m venv .venv
@@ -70,6 +76,12 @@ py -3.11 -m venv .venv
 python -m pip install -r requirements.txt
 ```
 
-### API account
+#### API account
 
 [https://randomuser.me/api]()
+
+### Run streaming
+
+```
+ spark-submit --master spark://localhost:7077 user_spark_stream.py
+```
