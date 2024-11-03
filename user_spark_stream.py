@@ -5,8 +5,9 @@ from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import from_json, col
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType
+from pyspark.sql.functions import from_json, col, expr
+import uuid
 
 def create_spark_connection():
     """create a spark session
@@ -67,10 +68,12 @@ def connect_and_get_users_from_kafka(spark_conn):
             .option("startingOffsets", "earliest")
             .load()
         )
+        print("Connected to Kafka and get the DataFrame")
         logging.info("Connected to Kafka and get the DataFrame")
 
     except Exception as e:
         logging.error("Error connecting to Kafka: %s", e)
+        print("Error connecting to Kafka: %s", e)
 
     return spark_df
 
@@ -167,13 +170,13 @@ def select_df_user_from_kafka(spark_df):
     """select the user data from the DataFrame"""
     schema = StructType(
         [
-            # StructField("id", StringType(), False),
+            StructField("id", StringType(), False),
             StructField("first_name", StringType(), False),
             StructField("last_name", StringType(), False),
             StructField("gender", StringType(), False),
             StructField("address", StringType(), False),
             StructField("email", StringType(), False),
-            StructField("post_code", StringType(), False),
+            StructField("postcode", StringType(), False),
             StructField("phone", StringType(), False),
             StructField("cell", StringType(), False),
             StructField("date_of_birth", StringType(), False),
@@ -188,7 +191,9 @@ def select_df_user_from_kafka(spark_df):
         .select(from_json(col("value"), schema).alias("data"))
         .select("data.*")
     )
-    print("Select DF: ", selected)
+    # Check if 'id' column exists, if not, add it with a generated UUID
+    if 'id' not in selected.columns:
+        selected = selected.withColumn("id", expr("uuid()"))
 
     return selected
 
@@ -211,16 +216,25 @@ if __name__ == "__main__":
 
             # Get user data from Kafka queue (Spark SQL Kafka)
             user_df = connect_and_get_users_from_kafka(spark_connection)
-            print("User DataFrame: ", user_df)
+            print("User DataFrame schema: ")
+            user_df.printSchema()
+            user_df.writeStream.format("console").outputMode("append").start().awaitTermination()
             
             if user_df is not None:
                 selected_df = select_df_user_from_kafka(user_df)
-                
+                print("Selected DataFrame schema:", selected_df.printSchema())
+
                 # Spark streaming app write to Cassandra (Spark Cassandra connector)
-                streaming_query = (user_df.writeStream.format("org.apache.spark.sql.cassandra")
-                                .option('checkpointLocation', '/tmp/checkpoint')
-                                .option('keyspace', 'spark_streams')
-                                .option('table', 'created_users')
-                                .start())
-                    
-                streaming_query.awaitTermination()
+                try:
+                    streaming_query = (
+                        selected_df.writeStream
+                        .format("org.apache.spark.sql.cassandra")
+                        .option("checkpointLocation", "/tmp/spark-checkpoint")
+                        .option("keyspace", "spark_streams")
+                        .option("table", "created_users")
+                        .option("spark.cassandra.output.consistency.level", "LOCAL_QUORUM")
+                        .start()
+                    )
+                    streaming_query.awaitTermination()
+                except Exception as e:
+                    logging.error("Error writing to Cassandra: %s", e)

@@ -45,7 +45,7 @@ def user_automation():
         Format data from API
         """
         user_data = {}
-        user_data['id'] = uuid.uuid4()
+        user_data['id'] = str(uuid.uuid4())
         user_data["first_name"] = response_data["name"]["first"]
         user_data["last_name"] = response_data["name"]["last"]
         user_data["gender"] = response_data["gender"]
@@ -84,7 +84,7 @@ def user_automation():
         
         while True:
             # Fetch and send data to Kafka in 60 seconds
-            if time.time() > current_time + 60:
+            if time.time() > current_time + 5:
                 break
             
             try:
