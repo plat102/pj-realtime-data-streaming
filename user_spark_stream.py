@@ -1,5 +1,5 @@
 import logging
-import select
+import os
 
 from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster
@@ -19,11 +19,18 @@ def create_spark_connection():
     try:
         spark = (
             SparkSession.builder.appName("spark_user_streaming")
-            .config(
-                "spark.jars.packages",
-                "com.datastax.spark:spark-cassandra-connector_2.13-3.4.1,"
-                "org.apache.spark:spark-sql-kafka-0-10_2.13-3.4.1",
-            )
+            .config('spark.jars.packages', "com.datastax.spark:spark-cassandra-connector_2.13:3.4.1,"
+                                           "org.apache.spark:spark-sql-kafka-0-10_2.13:3.4.1")
+            # .config("spark.jars", "spark-cassandra-connector_2.13-3.4.1, spark-sql-kafka-0-10_2.13-3.4.1")
+            # .config(
+            #     "spark.jars.packages",
+            #     "com.datastax.spark:spark-cassandra-connector_2.13:3.4.1"
+            # )
+            # .config(
+            #     "spark.jars.packages",
+            #     "org.apache.spark:spark-sql-kafka-0-10_2.13:3.4.1"
+            # )
+            # .config("spark.jars", os.getcwd() + "/jars/spark-sql-kafka-0-10_2.13:3.4.1.jar" + "," + os.getcwd() + "/jars/spark-cassandra-connector_2.13-3.4.1.jar") \
             .config("spark.cassandra.connection.host", "localhost")
             .getOrCreate()
         )
@@ -160,7 +167,7 @@ def select_df_user_from_kafka(spark_df):
     """select the user data from the DataFrame"""
     schema = StructType(
         [
-            StructField("id", StringType(), False),
+            # StructField("id", StringType(), False),
             StructField("first_name", StringType(), False),
             StructField("last_name", StringType(), False),
             StructField("gender", StringType(), False),
@@ -177,9 +184,9 @@ def select_df_user_from_kafka(spark_df):
         ]
     )
     selected = (
-        spark_df.selectExpr("CAST(value AS STRING")
+        spark_df.selectExpr("CAST(value AS STRING)")
         .select(from_json(col("value"), schema).alias("data"))
-        .selext("data.*")
+        .select("data.*")
     )
     print("Select DF: ", selected)
 
@@ -202,19 +209,18 @@ if __name__ == "__main__":
             create_user_table(cassandra_session)
             # insert_user_data(cassandra_session)
 
-            # Get user data from Kafka queue
+            # Get user data from Kafka queue (Spark SQL Kafka)
             user_df = connect_and_get_users_from_kafka(spark_connection)
             print("User DataFrame: ", user_df)
             
             if user_df is not None:
                 selected_df = select_df_user_from_kafka(user_df)
-                # Spark streaming app write to Cassandra
-                streaming_query = (
-                    selected_df.writeStream.format("org.apache.spark.sql.cassandra")
-                    .option("checkpointLocation", "file:///tmp/checkpoint")
-                    .option("keyspace", "spark_streams")
-                    .option("table", "created_users")
-                    .start()
-                )
                 
+                # Spark streaming app write to Cassandra (Spark Cassandra connector)
+                streaming_query = (user_df.writeStream.format("org.apache.spark.sql.cassandra")
+                                .option('checkpointLocation', '/tmp/checkpoint')
+                                .option('keyspace', 'spark_streams')
+                                .option('table', 'created_users')
+                                .start())
+                    
                 streaming_query.awaitTermination()

@@ -184,6 +184,9 @@ services:
       - "7077:7077"
     networks:
       - confluent
+    # volumes:
+    #   - ./spark/jars/spark-cassandra-connector_2.13-3.4.1.jar:/opt/bitnami/spark/jars/spark-cassandra-connector_2.13-3.4.1.jar
+    #   - ./spark/jars/spark-sql-kafka-0-10_2.12-3.4.1.jar:/opt/bitnami/spark/jars/spark-sql-kafka-0-10_2.12-3.4.1.jar
   spark-worker:
     image: bitnami/spark:3.4.1
     command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
@@ -196,6 +199,9 @@ services:
       SPARK_MASTER_URL: spark://spark-master:7077
     networks:
       - confluent
+    # volumes:
+    #   - ./spark/jars/spark-cassandra-connector_2.13-3.4.1.jar:/opt/bitnami/spark/jars/spark-cassandra-connector_2.13-3.4.1.jar
+    #   - ./spark/jars/spark-sql-kafka-0-10_2.12-3.4.1.jar:/opt/bitnami/spark/jars/spark-sql-kafka-0-10_2.12-3.4.1.jar
   
   cassandra_db:
     image: cassandra:5.0.1

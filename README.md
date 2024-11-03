@@ -83,5 +83,29 @@ python -m pip install -r requirements.txt
 ### Run streaming
 
 ```
- spark-submit --master spark://localhost:7077 user_spark_stream.py
+spark-submit --master spark://localhost:7077 --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.4.1,com.datastax.spark:spark-cassandra-connector_2.12:3.4.1 user_spark_stream.py
+```
+
+
+```
+# PowerShell (draft)
+
+spark-submit --master spark://localhost:7077 --packages com.datastax.spark:spark-cassandra-connector_2.13:3.4.1,org.apache.spark:spark-sql-kafka-0-10_2.13:3.4.1 user_spark_stream.py
+
+spark-submit --master spark://localhost:7077 --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.2.1 user_spark_stream.py
+
+
+spark-submit --master spark://localhost:7077 --packages com.datastax.spark:spark-cassandra-connector_2.12:3.2.1 --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.2.1 user_spark_stream.py
+
+
+spark-submit --master spark://localhost:7077 `
+    --packages com.datastax.spark:spark-cassandra-connector_2.13:3.4.1,org.apache.spark:spark-sql-kafka-0-10_2.13:3.4.1 `
+    user_spark_stream.py
+
+
+spark-submit --master spark://localhost:7077 `
+    --jars /opt/bitnami/spark/jars/spark-cassandra-connector_2.13-3.4.1.jar,/opt/bitnami/spark/jars/spark-sql-kafka-0-10_2.13-3.4.1.jar `
+  user_spark_stream.py
+
+
 ```

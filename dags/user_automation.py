@@ -5,6 +5,7 @@ DAG docs: DAG for automating user API data fetching
 import os
 import time
 import json
+import uuid
 from datetime import datetime
 
 import requests
@@ -44,6 +45,7 @@ def user_automation():
         Format data from API
         """
         user_data = {}
+        user_data['id'] = uuid.uuid4()
         user_data["first_name"] = response_data["name"]["first"]
         user_data["last_name"] = response_data["name"]["last"]
         user_data["gender"] = response_data["gender"]
