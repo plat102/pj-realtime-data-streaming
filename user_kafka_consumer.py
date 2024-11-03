@@ -1,7 +1,7 @@
 import json
 import logging
 from kafka import KafkaConsumer
-from utils.cassandra import create_cassandra_session, insert_user_data
+from utils.cassandra_functions import create_cassandra_session, insert_user_data
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
