@@ -3,6 +3,7 @@ DAG docs: DAG for automating user API data fetching
 """
 
 import os
+import time
 import json
 from datetime import datetime
 
@@ -10,6 +11,7 @@ import requests
 from dotenv import load_dotenv
 
 from airflow.decorators import dag, task
+from kafka import KafkaProducer
 
 load_dotenv()
 RANDOM_USER_API_URL = os.getenv("RANDOM_USER_API_URL")
@@ -33,7 +35,8 @@ def user_automation():
         """
         res = requests.get(RANDOM_USER_API_URL, timeout=5)
         results_data = res.json().get("results")[0]
-        print("Raw: ", json.dumps(results_data, indent=4))  # Output raw user data for verification
+        # Output raw user data for verification
+        # print("Raw: ", json.dumps(results_data, indent=4))
         return results_data
 
     def format_user_data(response_data):
@@ -59,18 +62,31 @@ def user_automation():
         user_data["picture"] = response_data["picture"]["medium"]
         user_data["username"] = response_data["login"]["username"]
 
-        print("Formatted: ", json.dumps(user_data, indent=4))  # Output formatted user data for verification
+        # Output formatted user data for verification
+        print("Formatted: ", json.dumps(user_data, indent=4))
 
-    @task(
-        task_id="stream_data_from_api",
-    )
-    def stream_data():
+        return user_data
+
+    @task
+    def stream_data_from_api():
         """
         Stream data to Kafka or another destination
         """
         response_data = get_data()
-        format_user_data(response_data)
-        
-    stream_data()
+        user_data = format_user_data(response_data)
+
+        # Connect to Kafka and send data to topic
+        try:
+            producer = KafkaProducer(
+                bootstrap_servers=["broker:29092"], max_block_ms=5000
+            )
+            producer.send("users_created", json.dumps(user_data).encode("utf-8"))
+            producer.flush()  # Ensure message is sent
+            print("Message sent to Kafka:", user_data)
+        except Exception as e:
+            print(f"Failed to send message to Kafka: {e}")
+
+    stream_data_from_api()
+
 
 user_automation()
