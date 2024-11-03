@@ -70,21 +70,30 @@ def user_automation():
     @task
     def stream_data_from_api():
         """
-        Stream data to Kafka or another destination
+        Stream data to Kafka
         """
-        response_data = get_data()
-        user_data = format_user_data(response_data)
+
+        current_time = time.time()
 
         # Connect to Kafka and send data to topic
-        try:
-            producer = KafkaProducer(
-                bootstrap_servers=["broker:29092"], max_block_ms=5000
-            )
-            producer.send("users_created", json.dumps(user_data).encode("utf-8"))
-            producer.flush()  # Ensure message is sent
-            print("Message sent to Kafka:", user_data)
-        except Exception as e:
-            print(f"Failed to send message to Kafka: {e}")
+        producer = KafkaProducer(
+            bootstrap_servers=["broker:29092"], max_block_ms=5000
+        )
+        
+        while True:
+            # Fetch and send data to Kafka in 60 seconds
+            if time.time() > current_time + 60:
+                break
+            
+            try:
+                response_data = get_data()
+                user_data = format_user_data(response_data)
+        
+                producer.send("users_created", json.dumps(user_data).encode("utf-8"))
+                producer.flush()  # Ensure message is sent
+                print("Message sent to Kafka:", user_data)
+            except Exception as e:
+                print(f"Failed to send message to Kafka: {e}")
 
     stream_data_from_api()
 
