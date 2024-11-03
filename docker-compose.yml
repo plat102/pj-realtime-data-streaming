@@ -1,6 +1,8 @@
 version: '3'
 
 services:
+
+  # Zookeeper
   zookeeper:
       image: confluentinc/cp-zookeeper:7.4.0
       hostname: zookeeper
@@ -18,6 +20,7 @@ services:
       networks:
         - confluent
 
+  # Kafka Broker
   broker:
     image: confluentinc/cp-server:7.4.0
     hostname: broker
@@ -55,6 +58,7 @@ services:
       timeout: 5s
       retries: 5
 
+  # Kafka Schema Registry
   schema-registry:
     image: confluentinc/cp-schema-registry:7.4.0
     hostname: schema-registry
@@ -104,11 +108,14 @@ services:
       timeout: 10s
       retries: 5
       
-  webserver:
-    image: apache/airflow:2.6.1-python3.9
-    # command: webserver
-    entrypoint: ['/opt/airflow/script/entrypoint.sh']
-    command: ["bash", "-c", "chmod +x /opt/airflow/script/entrypoint.sh && webserver"]
+  airflow-webserver:
+    image: apache/airflow:2.9.2-python3.11
+    # entrypoint: ["/bin/bash", "-c", "/opt/airflow/script/entrypoint.sh"]
+    entrypoint: ["/bin/bash", "-c", "cat /opt/airflow/script/entrypoint.sh && /opt/airflow/script/entrypoint.sh"]
+    # command: ["bash", "-c", "chmod +x /opt/airflow/script/entrypoint.sh && webserver"]
+    command: ["webserver"]
+    # entrypoint: ["bash"]
+    # command: ["-c", "sleep infinity"]
     depends_on:
       - postgres
     environment:
@@ -116,6 +123,8 @@ services:
       - EXECUTOR=Sequential
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
       - AIRFLOW__WEBSERVER__SECRET_KEY=${SECRET_KEY}
+    env_file:
+      - .env
     logging:
       options:
         max-size: 10m
@@ -134,10 +143,10 @@ services:
     networks:
       - confluent
 
-  scheduler:
-    image: apache/airflow:2.6.1-python3.9
+  airflow-scheduler:
+    image: apache/airflow:2.9.2-python3.11
     depends_on:
-      webserver:
+      airflow-webserver:
         condition: service_healthy
     volumes:
       - ./dags:/opt/airflow/dags
@@ -148,12 +157,14 @@ services:
       - EXECUTOR=Sequential
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
       - AIRFLOW__WEBSERVER__SECRET_KEY=${SECRET_KEY}
+    env_file:
+      - .env
     command: bash -c "pip install -r ./requirements.txt && airflow db upgrade && airflow scheduler"
     networks:
       - confluent
 
   postgres:
-    image: postgres:14.0
+    image: postgres:15
     environment:
       - POSTGRES_USER=airflow
       - POSTGRES_PASSWORD=airflow
@@ -173,6 +184,9 @@ services:
       - "7077:7077"
     networks:
       - confluent
+    # volumes:
+    #   - ./spark/jars/spark-cassandra-connector_2.13-3.4.1.jar:/opt/bitnami/spark/jars/spark-cassandra-connector_2.13-3.4.1.jar
+    #   - ./spark/jars/spark-sql-kafka-0-10_2.12-3.4.1.jar:/opt/bitnami/spark/jars/spark-sql-kafka-0-10_2.12-3.4.1.jar
   spark-worker:
     image: bitnami/spark:3.4.1
     command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
@@ -185,9 +199,12 @@ services:
       SPARK_MASTER_URL: spark://spark-master:7077
     networks:
       - confluent
-
+    # volumes:
+    #   - ./spark/jars/spark-cassandra-connector_2.13-3.4.1.jar:/opt/bitnami/spark/jars/spark-cassandra-connector_2.13-3.4.1.jar
+    #   - ./spark/jars/spark-sql-kafka-0-10_2.12-3.4.1.jar:/opt/bitnami/spark/jars/spark-sql-kafka-0-10_2.12-3.4.1.jar
+  
   cassandra_db:
-    image: cassandra:latest
+    image: cassandra:5.0.1
     container_name: cassandra
     hostname: cassandra
     ports:
@@ -195,10 +212,63 @@ services:
     environment:
       - MAX_HEAP_SIZE=512M
       - HEAP_NEWSIZE=100M
-      - CASSANDRA_USERNAME=${CASSANDRA_USERNAME}
-      - CASSANDRA_PASSWORD=${CASSANDRA_PASSWORD}
+      - CASSANDRA_USERNAME=cassandra
+      - CASSANDRA_PASSWORD=cassandra
     networks:
       - confluent
+
+  # # Cassandra Node 1
+  # cassandra1:
+  #   image: cassandra:5.0.1
+  #   container_name: cassandra1
+  #   hostname: cassandra1
+  #   ports:
+  #     - "9042:9042"
+  #   environment: &environment
+  #     CASSANDRA_SEEDS: "cassandra1,cassandra2"
+  #     CASSANDRA_CLUSTER_NAME: MyTestCluster
+  #     CASSANDRA_DC: DC1
+  #     CASSANDRA_RACK: RACK1
+  #     CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+  #     CASSANDRA_NUM_TOKENS: 128
+  #     CASSANDRA_USER: cassandra
+  #     CASSANDRA_PASSWORD: cassandra
+  #   volumes:
+  #     - ./cassandra/cassandra_data1:/var/lib/cassandra
+  #   networks:
+  #     - confluent
+
+  # # Cassandra Node 2
+  # cassandra2:
+  #   image: cassandra:5.0.1
+  #   container_name: cassandra2
+  #   hostname: cassandra2
+  #   ports:
+  #     - "9043:9042"
+  #   environment: *environment
+  #   depends_on:
+  #     cassandra1:
+  #       condition: service_started
+  #   volumes:
+  #     - ./cassandra/cassandra_data2:/var/lib/cassandra
+  #   networks:
+  #     - confluent
+
+  # # Cassandra Node 3
+  # cassandra3:
+  #   image: cassandra:5.0.1
+  #   container_name: cassandra3
+  #   hostname: cassandra3
+  #   ports:
+  #     - "9044:9042"
+  #   environment: *environment
+  #   depends_on:
+  #     cassandra2:
+  #       condition: service_started
+  #   volumes:
+  #     - ./cassandra/cassandra_data3:/var/lib/cassandra
+  #   networks:
+  #     - confluent
 
 networks:
   confluent:

@@ -1,9 +1,13 @@
-# Introduction
+# Realtime Data Streaming
 
-Learm from this video:
-https://www.youtube.com/watch?v=GqAcTrqKcrY&list=PL_Ct8Cox2p8UlTfHyJc3RDGuGktPNs9Q3&index=5
+## References
 
-# Architecture
+* Start from this video: [Realtime Data Streaming |  End To End Data Engineering Project](https://www.youtube.com/watch?v=GqAcTrqKcrY&t=3s&ab_channel=CodeWithYu)
+* [Tutorial on the TaskFlow API — Airflow Documentation](https://airflow.apache.org/docs/apache-airflow/2.3.1/tutorial_taskflow_api.html)
+
+## Architecture
+
+![1730554725756](image/README/1730554725756.png)
 
 * Data Source: [Random User Generator | Home](https://randomuser.me/)
 * Apache Airflow
@@ -17,71 +21,91 @@ https://www.youtube.com/watch?v=GqAcTrqKcrY&list=PL_Ct8Cox2p8UlTfHyJc3RDGuGktPNs
   * Worker
 * Cassandra
 
-# Guide
+| App UI               | URL                                                           |
+| -------------------- | ------------------------------------------------------------- |
+| Airflow              | [http://localhost:8080/home](http://localhost:8080/home)         |
+| Kafka Control Center | [http://localhost:9021/clusters](http://localhost:9021/clusters) |
+| Spark Master         | [http://localhost:9090/](http://localhost:9090/)                 |
 
-## Steps to do
+## Tasks
+
+**Steps to do**
 
 1. [ ] Get data from the API
 2. [ ] Build infrastructure using docker compose
 3. [ ] Stream data into Kafka
 4. [ ] Process by Spark
-5. [ ] Stream data into Cassdra
+5. [ ] Stream data into Cassandra
 
-## Things to improve
+### Get data from API
 
-* Packages management
-  * [python - PIP Constraints Files - Stack Overflow](https://stackoverflow.com/questions/34645821/pip-constraints-files)
-* 
+* [ ] Using request to get data
 
-# How to run it
+### Build infrastructure
 
-## Setup
-
-### Environments
-
-`python3.9 -m venv .venv `
-
-`source .venv/bin/activate `
-
-` pip install -r requirements.txt`
-
-* `apache-airflow`: [How to Install Apache Airflow on Mac | by Egemen Eroglu | Medium](https://erogluegemen.medium.com/how-to-install-apache-airflow-on-mac-df9bd5cf1ff8)
-  * `pip install 'apache-airflow==2.8.0' \ --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.8.0/constraints-3.8.txt"`
-    * [apache/airflow: Apache Airflow - A platform to programmatically author, schedule, and monitor workflows (github.com)](https://github.com/apache/airflow)
-  * `pip install "apache-airflow==2.6.1" --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.6.1/constraints-3.11.txt"`
-  * [python 3.x - Pip install on Mac OS gets error: command &#39;/usr/bin/clang&#39; failed with exit code 1 - Stack Overflow](https://stackoverflow.com/questions/64881510/pip-install-on-mac-os-gets-error-command-usr-bin-clang-failed-with-exit-code)
-
-`pip install kafka-python`
-
-### API account
-
-[https://randomuser.me/api]()
-
-# Checklists
-
-## Get data from API
-
-* [X] Using request to get data
-
-## Build infrastructure
-
-* [X] Zookeeper
-* [X] Kafka
-* [X] Airflow
+* [ ] Zookeeper
+* [ ] Kafka
+* [ ] Airflow
 * [ ] Spark
 * [ ] cassandra
 
-## Stream data into Kafka
+### Stream data into Kafka
 
-* [X] Add Kafka setup to docker-compose
-* [X] Implement Kafka send message code
-* [X] Add Airflow setup to docker-compose
+* [ ] Add Kafka setup to docker-compose
+* [ ] Implement Kafka send message code
+* [ ] Add Airflow setup to docker-compose
 
-## Apache Spark processing
+### Apache Spark processing
 
-* [X] Setup Spark (master and 1 worker)
-* [X] Setup Cassandra
+* [ ] Setup Spark (master and 1 worker)
+* [ ] Setup Cassandra
 
-## Stream data into Cassandra
+### Stream data into Cassandra
 
 * [ ] Add Spark stream
+
+## Run the project locally
+
+#### Environments
+
+```
+py -3.11 -m venv .venv
+
+.\.venv\Scripts\activate
+
+python -m pip install -r requirements.txt
+```
+
+#### API account
+
+[https://randomuser.me/api]()
+
+### Run streaming
+
+```
+spark-submit --master spark://localhost:7077 --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.4.1,com.datastax.spark:spark-cassandra-connector_2.12:3.4.1 user_spark_stream.py
+```
+
+
+```
+# PowerShell (draft)
+
+spark-submit --master spark://localhost:7077 --packages com.datastax.spark:spark-cassandra-connector_2.13:3.4.1,org.apache.spark:spark-sql-kafka-0-10_2.13:3.4.1 user_spark_stream.py
+
+spark-submit --master spark://localhost:7077 --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.2.1 user_spark_stream.py
+
+
+spark-submit --master spark://localhost:7077 --packages com.datastax.spark:spark-cassandra-connector_2.12:3.2.1 --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.2.1 user_spark_stream.py
+
+
+spark-submit --master spark://localhost:7077 `
+    --packages com.datastax.spark:spark-cassandra-connector_2.13:3.4.1,org.apache.spark:spark-sql-kafka-0-10_2.13:3.4.1 `
+    user_spark_stream.py
+
+
+spark-submit --master spark://localhost:7077 `
+    --jars /opt/bitnami/spark/jars/spark-cassandra-connector_2.13-3.4.1.jar,/opt/bitnami/spark/jars/spark-sql-kafka-0-10_2.13-3.4.1.jar `
+  user_spark_stream.py
+
+
+```
