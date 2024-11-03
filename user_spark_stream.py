@@ -1,11 +1,12 @@
 import logging
+import select
 
 from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_json, col
-
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 
 def create_spark_connection():
     """create a spark session
@@ -20,8 +21,8 @@ def create_spark_connection():
             SparkSession.builder.appName("spark_user_streaming")
             .config(
                 "spark.jars.packages",
-                "com.datastax.spark:spark-cassandra-connector_2.13:3.4.1,"
-                "org.apache.spark:spark-sql-kafka-0-10_2.13:3.4.1",
+                "com.datastax.spark:spark-cassandra-connector_2.13-3.4.1,"
+                "org.apache.spark:spark-sql-kafka-0-10_2.13-3.4.1",
             )
             .config("spark.cassandra.connection.host", "localhost")
             .getOrCreate()
@@ -47,6 +48,24 @@ def create_cassandra_connection():
     except Exception as e:
         logging.error("Error creating a Cassandra connection: %s", e)
         return None
+
+def connect_and_get_users_from_kafka(spark_conn):
+    spark_df = None
+
+    try:
+        spark_df = (
+            spark_conn.readStream.format("kafka")
+            .option("kafka.bootstrap.servers", "localhost:9092")
+            .option("subscribe", "users_created")
+            .option("startingOffsets", "earliest")
+            .load()
+        )
+        logging.info("Connected to Kafka and get the DataFrame")
+
+    except Exception as e:
+        logging.error("Error connecting to Kafka: %s", e)
+
+    return spark_df
 
 
 # create a Cassandra keyspace and table
@@ -80,6 +99,7 @@ def create_user_table(session):
             registered_date TEXT,
             picture TEXT,
             username TEXT
+        );
     """)
     print("Table created!")
 
@@ -136,15 +156,65 @@ def insert_user_data(session, **kwargs):
         logging.error("could not insert data due to %s", e)
 
 
+def select_df_user_from_kafka(spark_df):
+    """select the user data from the DataFrame"""
+    schema = StructType(
+        [
+            StructField("id", StringType(), False),
+            StructField("first_name", StringType(), False),
+            StructField("last_name", StringType(), False),
+            StructField("gender", StringType(), False),
+            StructField("address", StringType(), False),
+            StructField("email", StringType(), False),
+            StructField("post_code", StringType(), False),
+            StructField("phone", StringType(), False),
+            StructField("cell", StringType(), False),
+            StructField("date_of_birth", StringType(), False),
+            StructField("age", IntegerType(), False),
+            StructField("registered_date", StringType(), False),
+            StructField("picture", StringType(), False),
+            StructField("username", StringType(), False),
+        ]
+    )
+    selected = (
+        spark_df.selectExpr("CAST(value AS STRING")
+        .select(from_json(col("value"), schema).alias("data"))
+        .selext("data.*")
+    )
+    print("Select DF: ", selected)
+
+    return selected
+
+
 if __name__ == "__main__":
     spark_connection = create_spark_connection()
 
     if spark_connection is not None:
         print("Spark connections are created!")
+        
+        # Connect to Cassandra and load data
         cassandra_session = create_cassandra_connection()
-
+        
         if cassandra_session is not None:
             print("Cassandra connection are created!")
 
             create_keyspace(cassandra_session)
             create_user_table(cassandra_session)
+            # insert_user_data(cassandra_session)
+
+            # Get user data from Kafka queue
+            user_df = connect_and_get_users_from_kafka(spark_connection)
+            print("User DataFrame: ", user_df)
+            
+            if user_df is not None:
+                selected_df = select_df_user_from_kafka(user_df)
+                # Spark streaming app write to Cassandra
+                streaming_query = (
+                    selected_df.writeStream.format("org.apache.spark.sql.cassandra")
+                    .option("checkpointLocation", "file:///tmp/checkpoint")
+                    .option("keyspace", "spark_streams")
+                    .option("table", "created_users")
+                    .start()
+                )
+                
+                streaming_query.awaitTermination()
