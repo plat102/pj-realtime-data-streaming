@@ -29,7 +29,7 @@
 2. [ ] Build infrastructure using docker compose
 3. [ ] Stream data into Kafka
 4. [ ] Process by Spark
-5. [ ] Stream data into Cassdra
+5. [ ] Stream data into Cassandra
 
 ### Get data from API
 

@@ -122,7 +122,7 @@ services:
       - LOAD_EX=n
       - EXECUTOR=Sequential
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
-      - AIRFLOW__WEBSERVER__SECRET_KEY=${SECRET_KEY}
+      # - AIRFLOW__WEBSERVER__SECRET_KEY=${SECRET_KEY}
     logging:
       options:
         max-size: 10m
@@ -154,7 +154,7 @@ services:
       - LOAD_EX=n
       - EXECUTOR=Sequential
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
-      - AIRFLOW__WEBSERVER__SECRET_KEY=${SECRET_KEY}
+      # - AIRFLOW__WEBSERVER__SECRET_KEY=${SECRET_KEY}
     command: bash -c "pip install -r ./requirements.txt && airflow db upgrade && airflow scheduler"
     networks:
       - confluent
@@ -194,7 +194,7 @@ services:
       - confluent
 
   cassandra_db:
-    image: cassandra:latest
+    image: cassandra:5.0.1
     container_name: cassandra
     hostname: cassandra
     ports:
@@ -202,8 +202,8 @@ services:
     environment:
       - MAX_HEAP_SIZE=512M
       - HEAP_NEWSIZE=100M
-      - CASSANDRA_USERNAME=${CASSANDRA_USERNAME}
-      - CASSANDRA_PASSWORD=${CASSANDRA_PASSWORD}
+      - CASSANDRA_USERNAME=cassandra
+      - CASSANDRA_PASSWORD=cassandra
     networks:
       - confluent
 
