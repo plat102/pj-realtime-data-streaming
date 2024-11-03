@@ -1,5 +1,5 @@
 """
-DAG for automating user API data fetching
+DAG docs: DAG for automating user API data fetching
 """
 
 import os
@@ -9,11 +9,11 @@ from datetime import datetime
 import requests
 from dotenv import load_dotenv
 
-# from airflow.decorators import dag, task
-# from airflow.operators.python import PythonOperator
+from airflow.decorators import dag, task
 
 load_dotenv()
 RANDOM_USER_API_URL = os.getenv("RANDOM_USER_API_URL")
+# RANDOM_USER_API_URL = "https://randomuser.me/api/"
 
 default_args = {
     "owner": "thuphan",
@@ -21,18 +21,19 @@ default_args = {
 }
 
 
-# @dag(default_args=default_args, schedule_interval=None, catchup=False, tags=["example"])
+@dag(default_args=default_args, schedule_interval=None, catchup=False, tags=["example"])
 def user_automation():
     """
     DAG for automating user API data fetching
     """
 
     def get_data():
+        """
+        Fetch user data from API
+        """
         res = requests.get(RANDOM_USER_API_URL, timeout=5)
-
         results_data = res.json().get("results")[0]
-        # print(json.dumps(results_data, indent=4))
-
+        print("Raw: ", json.dumps(results_data, indent=4))  # Output raw user data for verification
         return results_data
 
     def format_user_data(response_data):
@@ -58,16 +59,18 @@ def user_automation():
         user_data["picture"] = response_data["picture"]["medium"]
         user_data["username"] = response_data["login"]["username"]
 
-        # print(json.dumps(user_data, indent=4))
+        print("Formatted: ", json.dumps(user_data, indent=4))  # Output formatted user data for verification
 
+    @task(
+        task_id="stream_data_from_api",
+    )
     def stream_data():
         """
-        Stream data to Kafka
+        Stream data to Kafka or another destination
         """
-        pass
-
-    res = get_data()
-    format_user_data(res)
-
+        response_data = get_data()
+        format_user_data(response_data)
+        
+    stream_data()
 
 user_automation()
