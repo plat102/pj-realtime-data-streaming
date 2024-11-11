@@ -99,7 +99,6 @@ Trigger the DAG on Airflow UI
 
 New msg on Kafka Control Center:
 
-![1731306563356](image/README/1731306563356.png)
 
 ### Run streaming
 
@@ -168,3 +167,14 @@ docker exec -it cassandra-node2 cqlsh
 Result will be the same
 
 ![1731296459632](image/README/1731296459632.png)
+
+### Monitor cassandra cluster
+
+![1731317036647](image/README/1731317036647.png)
+
+![1731317079175](image/README/1731317079175.png)
+
+![1731317143835](image/README/1731317143835.png)
+
+
+![1731317361966](image/README/1731317361966.png)
