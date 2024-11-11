@@ -76,36 +76,92 @@ py -3.11 -m venv .venv
 python -m pip install -r requirements.txt
 ```
 
-#### API account
+#### API
 
 [https://randomuser.me/api]()
 
+#### Run docker-compose
+
+From the root of that project folder:
+
+```
+docker-compose up -d
+
+```
+
+![1731295435099](image/README/1731295435099.png)
+
+### Call API & produce data
+
+Trigger the DAG on Airflow UI
+
+![1731295075053](image/README/1731295075053.png)
+
+
 ### Run streaming
+
+#### Consume Kafka using Spark Streaming
 
 ```
 spark-submit --master spark://localhost:7077 --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.4.1,com.datastax.spark:spark-cassandra-connector_2.12:3.4.1 user_spark_stream.py
 ```
 
+PowerShell (draft)
 
 ```
-# PowerShell (draft)
-
 spark-submit --master spark://localhost:7077 --packages com.datastax.spark:spark-cassandra-connector_2.13:3.4.1,org.apache.spark:spark-sql-kafka-0-10_2.13:3.4.1 user_spark_stream.py
 
 spark-submit --master spark://localhost:7077 --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.2.1 user_spark_stream.py
 
-
 spark-submit --master spark://localhost:7077 --packages com.datastax.spark:spark-cassandra-connector_2.12:3.2.1 --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.2.1 user_spark_stream.py
-
 
 spark-submit --master spark://localhost:7077 `
     --packages com.datastax.spark:spark-cassandra-connector_2.13:3.4.1,org.apache.spark:spark-sql-kafka-0-10_2.13:3.4.1 `
     user_spark_stream.py
 
-
 spark-submit --master spark://localhost:7077 `
     --jars /opt/bitnami/spark/jars/spark-cassandra-connector_2.13-3.4.1.jar,/opt/bitnami/spark/jars/spark-sql-kafka-0-10_2.13-3.4.1.jar `
   user_spark_stream.py
+```
 
+#### Consume Kafka using Python script
 
 ```
+python ./user_kafka_consumer.py
+```
+
+![1731295898811](image/README/1731295898811.png)
+
+### Query Cassandra cluster
+
+Via localhost:9042 (Cassandra mounted port)
+
+![1731295956310](image/README/1731295956310.png)
+
+Access node 1:
+
+```
+ docker exec -it cassandra-node1 cqlsh
+```
+
+Query:
+
+```
+USE spark_streams;
+SELECT count(*) FROM created_users;
+```
+
+Result:
+
+![1731296281713](image/README/1731296281713.png)
+
+Then access node 2:
+
+```
+docker exec -it cassandra-node2 cqlsh
+
+```
+
+Result will be the same
+
+![1731296459632](image/README/1731296459632.png)

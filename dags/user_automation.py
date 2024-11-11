@@ -84,7 +84,7 @@ def user_automation():
         
         while True:
             # Fetch and send data to Kafka in 60 seconds
-            if time.time() > current_time + 5:
+            if time.time() > current_time + 10:
                 break
             
             try:
