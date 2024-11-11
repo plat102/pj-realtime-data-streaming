@@ -97,6 +97,9 @@ Trigger the DAG on Airflow UI
 
 ![1731295075053](image/README/1731295075053.png)
 
+New msg on Kafka Control Center:
+
+![1731306563356](image/README/1731306563356.png)
 
 ### Run streaming
 
